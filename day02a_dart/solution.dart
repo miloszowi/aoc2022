@@ -2,62 +2,25 @@ import 'dart:io';
 
 void main()
 {
-	List<Map<String, String>> plays = readPlaysFromInput();
-	Map<String, int> scoring = {
-		'X': 1,
-		'Y': 2,
-		'Z': 3
-	};
-
-	int totalResult = 0;
-
-	for (final play in plays) {
-		totalResult += getChallengeScoreResult(play['yourPlay'], play['enemyPlay']) + scoring[play['yourPlay']];
-	}
-
-	print(totalResult);
-}
-
-List<Map<String, String>> readPlaysFromInput()
-{
-	List<Map<String, String>> plays = [];
+    Map<String, int> translate = {'X': 1, 'Y': 2, 'Z': 3, 'A': 1, 'B': 2, 'C': 3};
+    int result = 0;
 
 	while (true)
 	{
-		var currentLine = stdin.readLineSync();
-		if (null == currentLine) break;
-		var splitedLine = currentLine.split(' ');
-
-		plays.add(<String, String>{
-			'yourPlay': splitedLine[1],
-			'enemyPlay': splitedLine[0]
-		});
+	    var line = stdin.readLineSync();
+	    if (null == line) break;
+	    var splitted = line.split(' ');
+	    result += getPlayResult(translate[splitted[0]], translate[splitted[1]]);
 	}
 
-	return plays;
+	print(result);
 }
 
-int getChallengeScoreResult(String yourPlay, String enemyPlay)
+int getPlayResult(int enemyPlay, int yourPlay)
 {
-	Map<String, String> counterPlays = {
-		'Y': 'A',
-		'Z': 'B',
-		'X': 'C'
-	};
+    Map<int, int> beatMap = {1: 2, 2: 3, 3: 1};
+    if (enemyPlay == yourPlay) return 3 + yourPlay;
+    if (beatMap[yourPlay] == enemyPlay) return 0 + yourPlay;
 
-	Map<String, String> drawList = {
-		'X': 'A',
-		'Y': 'B',
-		'Z': 'C'
-	};
-
-	if (drawList[yourPlay] == enemyPlay) {
-		return 3;
-	}
-
-	if (counterPlays[yourPlay] == enemyPlay) {
-		return 6;
-	}
-
-	return 0;
+    return 6 + yourPlay;
 }
