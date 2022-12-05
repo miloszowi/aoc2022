@@ -1,64 +1,51 @@
 import java.util.*
  
 fun main(args: Array<String>) {
-    val stacks = readContainersIntoStacks()
-    val procedures = readProcedures()
-    
-    for (procedure in procedures) {
-        val amountToMove = procedure[0]
-        val origin = procedure[1] - 1
-        val destination = procedure[2] - 1
-      
-        val chars = stacks[origin].takeLast(amountToMove)
-        chars.forEach{
-            stacks[destination].add(it)
-            stacks[origin].removeLast()
-        }
+    val stdin = readStdin()
+    val stacks = List((stdin.first().length+1) / 4) { ArrayDeque<Char>() }
 
+    run buildContainerStacks@{
+        stdin.filter{
+            s -> s.contains("[")
+        }.forEach{
+            val row = it.chunked(4)
+            for (i in 0..row.size-1) {
+                val container = row[i][1]
+
+                if (!container.isWhitespace()) {
+                    stacks[i].addFirst(container)
+                }
+            }
+        }
+    }
+  
+    run procedures@{
+        stdin.filter{
+            s -> s.startsWith("move")
+        }.forEach{
+            val (amount, origin, destination) = Regex("[0-9]+").findAll(it)
+                .map(MatchResult::value)
+                .map(String::toInt)
+                .toList()
+                
+            val containersToMove = stacks[origin-1].toList().takeLast(amount)
+            containersToMove.forEach {
+                stacks[destination-1].add(it)
+                stacks[origin-1].removeLast()
+            }
+        }
     }
     
     stacks.forEach{print(it.last())}
 }
 
-fun readContainersIntoStacks(): MutableList<MutableList<Char>> {
-    val stacks = mutableListOf<MutableList<Char>>()
-    
+fun readStdin(): MutableList<String> {
+    val stdin = mutableListOf<String>()
     while (true) {
-        val line = readLine().toString()
-        if (line.contains("[0-9]".toRegex())) {
-            readLine()
-            break
-        }
-        val chunkedLine = line.chunked(4)
-    
-        for (i in 0..chunkedLine.size-1) {
-            val container = chunkedLine[i][1]
-
-            if (i !in stacks.indices) {
-                stacks.add(mutableListOf<Char>())
-            }            
-            if (!container.isWhitespace()) {
-                stacks[i].add(container)
-            }
-        }
-    }
-
-    stacks.forEach{it.reverse()}
-    return stacks
-}
-
-fun readProcedures(): MutableList<List<Int>> {
-    val procedures = mutableListOf<List<Int>>()
-    while (true) {
-        val procedure = readLine()
-        if (procedure == null) break
-        procedures.add(
-            Regex("[0-9]+").findAll(procedure)
-                .map(MatchResult::value)
-                .map(String::toInt)
-                .toList()
-        )
+        val line = readLine()
+        if (line === null) break
+        stdin.add(line)
     }
   
-    return procedures
+    return stdin
 }
